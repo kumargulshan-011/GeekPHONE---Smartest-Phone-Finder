@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeekPhone — India's Smartest Phone Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #080a0f;
+    --surface: #0e1118;
+    --card:    #12161f;
+    --border:  rgba(255,255,255,0.07);
+    --accent:  #c8ff00;
+    --accent2: #ff5c5c;
+    --accent3: #5ce1ff;
+    --text:    #f0f2f7;
+    --muted:   #6b7280;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;overflow-x:hidden;cursor:none;}
+
+  .cursor{position:fixed;width:12px;height:12px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 0 8px rgba(200,255,0,.8);}
+  .cursor-ring{position:fixed;width:34px;height:34px;border:1.5px solid var(--accent);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:left .1s ease,top .1s ease;opacity:.45;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");pointer-events:none;z-index:999;opacity:.38;}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:1.1rem 2.5rem;display:flex;align-items:center;justify-content:space-between;background:rgba(8,10,15,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+  .nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.75rem;letter-spacing:.12em;color:var(--text);}
+  .nav-logo span{color:var(--accent);}
+  .nav-badge{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.2em;color:var(--accent);border:1px solid rgba(200,255,0,.3);padding:.2rem .65rem;border-radius:100px;margin-left:.8rem;}
+  .nav-links{display:flex;gap:1.8rem;list-style:none;}
+  .nav-links a{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.2em;color:var(--muted);text-decoration:none;text-transform:uppercase;transition:color .2s;cursor:none;user-select:none;}
+  .nav-links a:hover{color:var(--accent);}
+  @media(max-width:600px){.nav-links{display:none;}}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;position:relative;overflow:hidden;padding:2rem;}
+  .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(200,255,0,.09) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 80% 80%,rgba(92,225,255,.06) 0%,transparent 50%),radial-gradient(ellipse 30% 30% at 20% 70%,rgba(255,92,92,.05) 0%,transparent 50%);}
+  .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 30%,transparent 80%);}
+  .hero-tag{font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;border:1px solid rgba(200,255,0,.3);padding:.4rem 1.2rem;border-radius:100px;margin-bottom:2rem;animation:fadeUp .8s ease both;position:relative;z-index:1;}
+  .hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,16vw,14rem);line-height:.88;letter-spacing:-.01em;background:linear-gradient(160deg,#fff 0%,#8892a4 100%);-webkit-background-clip:text;background-clip:text;color:transparent;animation:fadeUp .8s .1s ease both;position:relative;z-index:1;}
+  .hero-title .acc{background:var(--accent);-webkit-background-clip:text;background-clip:text;}
+  .hero-sub{font-family:'Instrument Serif',serif;font-style:italic;font-size:clamp(1rem,2.5vw,1.5rem);color:var(--muted);margin-top:1.2rem;animation:fadeUp .8s .2s ease both;position:relative;z-index:1;}
+  .hero-cta{margin-top:2.5rem;display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;animation:fadeUp .8s .3s ease both;position:relative;z-index:1;}
+  .btn-primary{background:var(--accent);color:#000;font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;letter-spacing:.05em;padding:.88rem 2.2rem;border-radius:4px;border:none;cursor:none;transition:transform .2s,box-shadow .2s;text-transform:uppercase;}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(200,255,0,.3);}
+  .btn-ghost{background:transparent;color:var(--text);font-family:'Syne',sans-serif;font-weight:600;font-size:.88rem;letter-spacing:.05em;padding:.88rem 2.2rem;border-radius:4px;border:1px solid var(--border);cursor:none;transition:border-color .2s,background .2s;text-transform:uppercase;}
+  .btn-ghost:hover{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.04);}
+  .scroll-hint{position:absolute;bottom:2.5rem;display:flex;flex-direction:column;align-items:center;gap:.5rem;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;animation:fadeUp 1s .6s ease both;z-index:1;}
+  .scroll-hint .line{width:1px;height:48px;background:linear-gradient(to bottom,var(--muted),transparent);}
+
+  /* INDIA STRIP */
+  .india-strip{background:linear-gradient(90deg,rgba(200,255,0,.06),rgba(200,255,0,.03),transparent);border-top:1px solid rgba(200,255,0,.12);border-bottom:1px solid rgba(200,255,0,.12);padding:.85rem 2rem;display:flex;align-items:center;justify-content:center;gap:2rem;flex-wrap:wrap;}
+  .india-strip span{font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;}
+  .india-strip strong{color:var(--accent);}
+
+  /* SECTIONS */
+  .picks-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .section{max-width:1200px;margin:0 auto;padding:5.5rem 2rem;}
+  .section-label{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.35em;color:var(--accent);text-transform:uppercase;margin-bottom:.8rem;}
+  .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,7vw,5.5rem);line-height:.92;color:var(--text);margin-bottom:1.5rem;}
+
+  /* EXPERT PICKS */
+  .picks-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2.5rem;}
+  @media(max-width:700px){.picks-grid{grid-template-columns:1fr;}}
+  .pick-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:relative;transition:transform .3s,border-color .3s;}
+  .pick-card:hover{transform:translateY(-4px);border-color:rgba(200,255,0,.22);}
+  .pick-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(200,255,0,.04),transparent 60%);pointer-events:none;}
+  .pick-rank{position:absolute;top:1.2rem;left:1.2rem;background:var(--accent);color:#000;font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.15em;padding:.2rem .7rem;border-radius:4px;z-index:2;}
+  .pick-header{padding:2rem 2rem 1.2rem;display:flex;align-items:flex-start;gap:1.2rem;}
+  .pick-emoji{font-size:3.5rem;filter:drop-shadow(0 6px 20px rgba(0,0,0,.5));}
+  .pick-info{flex:1;}
+  .pick-brand{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;margin-bottom:.3rem;}
+  .pick-name{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--text);line-height:1.1;margin-bottom:.5rem;}
+  .pick-price{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--accent);letter-spacing:.03em;}
+  .pick-price sub{font-size:.75rem;letter-spacing:.1em;opacity:.6;}
+  .pick-body{padding:0 2rem 1.8rem;}
+  .pick-verdict{font-family:'Instrument Serif',serif;font-style:italic;font-size:1.02rem;color:#a0aab8;line-height:1.65;margin-bottom:1.2rem;border-left:3px solid var(--accent);padding-left:1rem;}
+  .pick-pros{list-style:none;display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;}
+  .pick-pros li{font-size:.82rem;color:var(--text);display:flex;align-items:flex-start;gap:.5rem;}
+  .pick-pros li::before{content:'✓';color:var(--accent);font-weight:700;font-size:.85rem;flex-shrink:0;margin-top:.05rem;}
+  .pick-cons{list-style:none;display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.5rem;}
+  .pick-cons li{font-size:.82rem;color:var(--muted);display:flex;align-items:flex-start;gap:.5rem;}
+  .pick-cons li::before{content:'✗';color:var(--accent2);font-size:.8rem;flex-shrink:0;margin-top:.08rem;}
+  .pick-yt{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;display:flex;align-items:center;gap:.8rem;margin-bottom:.7rem;cursor:none;transition:border-color .2s,background .2s;text-decoration:none;}
+  .pick-yt:hover{border-color:rgba(255,0,0,.4);background:rgba(255,0,0,.06);}
+  .pick-yt .yt-icon{width:30px;height:30px;background:#ff0000;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .pick-yt .yt-icon svg{width:13px;fill:white;}
+  .pick-yt .yt-text{flex:1;}
+  .pick-yt .yt-label{font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;}
+  .pick-yt .yt-title{font-size:.78rem;font-weight:600;color:var(--text);}
+  .pick-yt .yt-arrow{color:var(--muted);font-size:.85rem;}
+  .pick-btns{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:1rem;}
+  .pick-btn{padding:.75rem .5rem;border-radius:6px;font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;letter-spacing:.05em;text-transform:uppercase;text-align:center;cursor:none;transition:all .2s;text-decoration:none;display:block;}
+  .pick-btn.amazon{background:rgba(255,153,0,.12);color:#ff9900;border:1px solid rgba(255,153,0,.28);}
+  .pick-btn.amazon:hover{background:rgba(255,153,0,.22);}
+  .pick-btn.flipkart{background:rgba(71,133,248,.12);color:#4785f8;border:1px solid rgba(71,133,248,.28);}
+  .pick-btn.flipkart:hover{background:rgba(71,133,248,.22);}
+  .pick-btn.official{grid-column:1/-1;background:rgba(200,255,0,.08);color:var(--accent);border:1px solid rgba(200,255,0,.22);}
+  .pick-btn.official:hover{background:rgba(200,255,0,.16);}
+
+  /* FINDER */
+  .finder-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:2.5rem;}
+  @media(max-width:640px){.finder-grid{grid-template-columns:1fr;}}
+  .finder-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.6rem;transition:border-color .3s;}
+  .finder-card:hover{border-color:rgba(200,255,0,.14);}
+  .finder-card.full{grid-column:1/-1;}
+  .finder-card label{display:block;font-family:'DM Mono',monospace;font-size:.64rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;margin-bottom:.9rem;}
+  .price-display{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--accent);letter-spacing:.02em;margin-bottom:.7rem;}
+  .range-track{position:relative;height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin:.8rem 0 .4rem;}
+  .range-fill{position:absolute;height:100%;background:var(--accent);border-radius:2px;transition:width .05s;pointer-events:none;}
+  input[type="range"]{-webkit-appearance:none;width:100%;height:4px;background:transparent;cursor:none;position:relative;z-index:1;}
+  input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:var(--accent);border-radius:50%;border:3px solid var(--bg);cursor:none;transition:transform .2s,box-shadow .2s;}
+  input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.3);box-shadow:0 0 0 6px rgba(200,255,0,.18);}
+  .range-labels{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);margin-top:.3rem;}
+  .chips{display:flex;flex-wrap:wrap;gap:.5rem;}
+  .chip{padding:.5rem 1rem;border-radius:100px;border:1px solid var(--border);font-size:.78rem;font-weight:600;cursor:none;transition:all .2s;user-select:none;display:flex;align-items:center;gap:.35rem;color:var(--muted);}
+  .chip:hover{border-color:rgba(255,255,255,.2);color:var(--text);}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:#000;}
+  .os-toggle{display:flex;gap:.5rem;}
+  .os-btn{flex:1;padding:.75rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;cursor:none;transition:all .2s;text-align:center;}
+  .os-btn.active-any{background:var(--card);border-color:rgba(255,255,255,.2);color:var(--text);}
+  .os-btn.active-ios{background:rgba(92,225,255,.08);border-color:var(--accent3);color:var(--accent3);}
+  .os-btn.active-android{background:rgba(200,255,0,.08);border-color:var(--accent);color:var(--accent);}
+  .user-chip{padding:.65rem 1.1rem;border-radius:8px;border:1px solid var(--border);font-size:.8rem;font-weight:600;cursor:none;transition:all .2s;user-select:none;display:flex;align-items:center;gap:.5rem;color:var(--muted);}
+  .user-chip:hover{border-color:rgba(255,255,255,.18);color:var(--text);}
+  .user-chip.active{background:rgba(200,255,0,.08);border-color:var(--accent);color:var(--text);}
+  .find-btn{width:100%;padding:1.3rem;background:var(--accent);color:#000;font-family:'Bebas Neue',sans-serif;font-size:1.75rem;letter-spacing:.12em;border:none;border-radius:8px;cursor:none;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;}
+  .find-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);transform:translateX(-100%);transition:transform .4s;}
+  .find-btn:hover::after{transform:translateX(100%);}
+  .find-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(200,255,0,.3);}
+
+  /* RESULTS */
+  #results{display:none;}
+  #results.visible{display:block;}
+  .results-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:2.5rem;flex-wrap:wrap;gap:1rem;}
+  .result-count{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted);letter-spacing:.1em;}
+  .result-count span{color:var(--accent);font-size:1.1rem;}
+  .phones-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(305px,1fr));gap:1.5rem;}
+  .phone-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:transform .3s,border-color .3s,box-shadow .3s;animation:cardIn .4s ease both;position:relative;}
+  .phone-card:hover{transform:translateY(-5px);border-color:rgba(200,255,0,.2);box-shadow:0 20px 60px rgba(0,0,0,.45);}
+  .phone-card.top-pick::before{content:'TOP PICK 🏆';position:absolute;top:1rem;right:1rem;background:var(--accent);color:#000;font-family:'DM Mono',monospace;font-size:.58rem;font-weight:bold;letter-spacing:.12em;padding:.3rem .7rem;border-radius:4px;z-index:2;}
+  .phone-img-wrap{height:185px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0d1019 0%,#151c28 100%);position:relative;overflow:hidden;}
+  .phone-img-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:50px;background:linear-gradient(to top,var(--card),transparent);}
+  .phone-emoji{font-size:4.5rem;filter:drop-shadow(0 10px 30px rgba(0,0,0,.5));animation:float 4s ease-in-out infinite;}
+  .phone-brand-badge{position:absolute;top:1rem;left:1rem;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.18em;color:var(--muted);background:rgba(0,0,0,.55);backdrop-filter:blur(10px);padding:.25rem .6rem;border-radius:4px;border:1px solid var(--border);text-transform:uppercase;}
+  .phone-body{padding:1.4rem;}
+  .phone-name{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:var(--text);margin-bottom:.22rem;}
+  .phone-price{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--accent);letter-spacing:.02em;margin-bottom:.9rem;}
+  .phone-scores{display:flex;flex-direction:column;gap:.42rem;margin-bottom:1.1rem;}
+  .score-row{display:flex;align-items:center;gap:.7rem;}
+  .score-label{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;width:80px;flex-shrink:0;}
+  .score-bar{flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+  .score-fill{height:100%;border-radius:2px;}
+  .score-num{font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text);width:26px;text-align:right;}
+  .phone-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:1.1rem;}
+  .phone-tag{font-family:'DM Mono',monospace;font-size:.57rem;letter-spacing:.08em;padding:.22rem .55rem;border-radius:4px;text-transform:uppercase;}
+  .phone-tag.good{background:rgba(200,255,0,.08);color:var(--accent);border:1px solid rgba(200,255,0,.18);}
+  .phone-tag.neutral{background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border);}
+  .phone-buy-btns{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
+  .buy-btn{padding:.65rem .4rem;border-radius:6px;font-family:'Syne',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;text-align:center;cursor:none;transition:all .2s;text-decoration:none;display:block;}
+  .buy-btn.amazon{background:rgba(255,153,0,.1);color:#ff9900;border:1px solid rgba(255,153,0,.22);}
+  .buy-btn.amazon:hover{background:rgba(255,153,0,.2);}
+  .buy-btn.flipkart{background:rgba(71,133,248,.1);color:#4785f8;border:1px solid rgba(71,133,248,.22);}
+  .buy-btn.flipkart:hover{background:rgba(71,133,248,.2);}
+  .buy-btn.official{grid-column:1/-1;background:rgba(200,255,0,.07);color:var(--accent);border:1px solid rgba(200,255,0,.2);}
+  .buy-btn.official:hover{background:rgba(200,255,0,.15);}
+
+  /* COMPARE TABLE */
+  .compare-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .compare-table-wrap{overflow-x:auto;margin-top:2rem;}
+  .compare-table{width:100%;border-collapse:collapse;min-width:900px;}
+  .compare-table th{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;padding:.9rem 1.3rem;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;}
+  .compare-table td{padding:.9rem 1.3rem;border-bottom:1px solid var(--border);font-size:.88rem;color:var(--text);white-space:nowrap;}
+  .compare-table tr:hover td{background:rgba(255,255,255,.02);}
+  .compare-table td:first-child{font-weight:700;}
+  .compare-table .best{color:var(--accent);font-weight:700;}
+  .compare-table .rating-dots{display:flex;gap:3px;}
+  .compare-table .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.12);}
+  .compare-table .dot.filled{background:var(--accent);}
+
+  /* MISC */
+  .divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);}
+  .no-results{text-align:center;padding:4rem;color:var(--muted);font-family:'Instrument Serif',serif;font-style:italic;font-size:1.25rem;grid-column:1/-1;}
+
+  /* FOOTER */
+  .footer{text-align:center;padding:4rem 2rem;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;border-top:1px solid var(--border);}
+  .footer .logo-text{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--text);letter-spacing:.2em;display:block;margin-bottom:.5rem;}
+  .footer .logo-text span{color:var(--accent);}
+
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px;}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(200,255,0,.25);}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes cardIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div style="display:flex;align-items:center;">
+    <div class="nav-logo">Geek<span>Phone</span></div>
+    <span class="nav-badge">🇮🇳 India Edition</span>
+  </div>
+  <ul class="nav-links">
+    <li><a onclick="smoothTo('picks')">Geek Picks</a></li>
+    <li><a onclick="smoothTo('finder')">Finder</a></li>
+    <li><a onclick="smoothTo('compare')">Compare</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-tag">🇮🇳 Built For India · Prices In ₹ · Honest Picks</div>
+  <h1 class="hero-title">FIND YOUR<br><span class="acc">PERFECT</span><br>PHONE</h1>
+  <p class="hero-sub">Honest picks. Indian prices. Zero fluff.</p>
+  <div class="hero-cta">
+    <button class="btn-primary" onclick="smoothTo('picks')">Geek Picks →</button>
+    <button class="btn-ghost"   onclick="smoothTo('finder')">Smart Finder ↓</button>
+  </div>
+  <div class="scroll-hint"><div class="line"></div>Scroll</div>
+</section>
+
+<!-- INDIA STRIP -->
+<div class="india-strip">
+  <span>💰 Budget from <strong>₹10,000</strong></span>
+  <span>🏆 Flagships up to <strong>₹1,50,000</strong></span>
+  <span>🛒 Amazon · Flipkart · Official Stores</span>
+  <span>📺 YouTube Reviews Included</span>
+</div>
+
+<!-- EXPERT PICKS -->
+<section id="picks" class="picks-section">
+  <div class="section">
+    <div class="section-label">// GeekPhone Expert Recommendation</div>
+    <h2 class="section-title">OUR TOP<br>2 PICKS</h2>
+    <p style="color:var(--muted);font-family:'Instrument Serif',serif;font-style:italic;font-size:1.05rem;max-width:600px;">Researched from India's top tech reviewers. No paid promotions — just honest analysis.</p>
+
+    <div class="picks-grid">
+      <!-- PICK 1 -->
+      <div class="pick-card">
+        <div class="pick-rank">#1 ALL-ROUNDER</div>
+        <div class="pick-header">
+          <div class="pick-emoji">📱</div>
+          <div class="pick-info">
+            <div class="pick-brand">OnePlus</div>
+            <div class="pick-name">OnePlus 13</div>
+            <div class="pick-price">₹63,999 <sub>Amazon Official</sub></div>
+          </div>
+        </div>
+        <div class="pick-body">
+          <div class="pick-verdict">"The most balanced flagship you can buy in India under ₹70K. Snapdragon 8 Elite, stunning 2K AMOLED, Hasselblad cameras, 6000mAh + 100W charging, clean OxygenOS, and 5 years of updates. It's the complete package."</div>
+          <ul class="pick-pros">
+            <li>Snapdragon 8 Elite — fastest chip of 2025</li>
+            <li>Hasselblad 50MP triple cameras, Dolby Vision video</li>
+            <li>6000mAh + 100W charging (0–100 in ~35 min)</li>
+            <li>2K ProXDR curved AMOLED, DisplayMate A++</li>
+            <li>OxygenOS 15 — clean near-stock Android</li>
+            <li>IP68+IP69 rated — most durable in class</li>
+            <li>5 years OS + 6 years security updates</li>
+          </ul>
+          <ul class="pick-cons">
+            <li>No wireless charging in box</li>
+            <li>Large 6.82" form — not for small hands</li>
+          </ul>
+          <a class="pick-yt" href="https://www.youtube.com/results?search_query=OnePlus+13+review+India+2025" target="_blank">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg></div>
+            <div class="yt-text"><div class="yt-label">Watch on YouTube</div><div class="yt-title">OnePlus 13 Full Review — India 2025</div></div>
+            <span class="yt-arrow">↗</span>
+          </a>
+          <a class="pick-yt" href="https://www.youtube.com/results?search_query=OnePlus+13+vs+iQOO+13+India+comparison+2025" target="_blank">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg></div>
+            <div class="yt-text"><div class="yt-label">Comparison</div><div class="yt-title">OnePlus 13 vs iQOO 13 — Worth the ₹9K Difference?</div></div>
+            <span class="yt-arrow">↗</span>
+          </a>
+          <div class="pick-btns">
+            <a class="pick-btn amazon"   href="https://www.amazon.in/dp/B0DPS7FB4J" target="_blank">🛒 Amazon ₹63,999</a>
+            <a class="pick-btn flipkart" href="https://www.flipkart.com/oneplus-13-black-eclipse-256-gb/p/itmb4659fd2a037f" target="_blank">🛍 Flipkart</a>
+            <a class="pick-btn official" href="https://www.oneplus.in/oneplus-13" target="_blank">🔗 Official OnePlus India</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- PICK 2 -->
+      <div class="pick-card">
+        <div class="pick-rank">#2 BEST VALUE</div>
+        <div class="pick-header">
+          <div class="pick-emoji">⚡</div>
+          <div class="pick-info">
+            <div class="pick-brand">iQOO (by Vivo)</div>
+            <div class="pick-name">iQOO 13 5G</div>
+            <div class="pick-price">₹54,999 <sub>Flipkart Official</sub></div>
+          </div>
+        </div>
+        <div class="pick-body">
+          <div class="pick-verdict">"₹9,000 cheaper than OnePlus 13 with the same Snapdragon 8 Elite chip — but charges even faster at 120W (full in 25 mins!). An absolute gaming beast with silky 144Hz E7 AMOLED. India's smartest flagship buy."</div>
+          <ul class="pick-pros">
+            <li>Snapdragon 8 Elite — same flagship chip as OnePlus 13</li>
+            <li>120W Ultra-fast charging — full in just 25 minutes</li>
+            <li>144Hz Samsung E7 AMOLED — ultra smooth</li>
+            <li>6000mAh monster battery</li>
+            <li>RGB Halo light ring — unique personality</li>
+            <li>Q2 supercomputing chip for gaming boost</li>
+            <li>Saves you ₹9,000 vs OnePlus 13</li>
+          </ul>
+          <ul class="pick-cons">
+            <li>No wireless charging</li>
+            <li>Funtouch OS has more bloatware</li>
+            <li>4 years OS updates vs OnePlus's 5</li>
+          </ul>
+          <a class="pick-yt" href="https://www.youtube.com/results?search_query=iQOO+13+review+India+2025" target="_blank">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg></div>
+            <div class="yt-text"><div class="yt-label">Watch on YouTube</div><div class="yt-title">iQOO 13 Full Review — Should You Buy in India?</div></div>
+            <span class="yt-arrow">↗</span>
+          </a>
+          <a class="pick-yt" href="https://www.youtube.com/results?search_query=iQOO+13+vs+OnePlus+13+India+comparison+2025" target="_blank">
+            <div class="yt-icon"><svg viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/></svg></div>
+            <div class="yt-text"><div class="yt-label">Head-to-Head</div><div class="yt-title">iQOO 13 vs OnePlus 13 — Is ₹9K Difference Worth It?</div></div>
+            <span class="yt-arrow">↗</span>
+          </a>
+          <div class="pick-btns">
+            <a class="pick-btn flipkart" href="https://www.flipkart.com/iqoo-13-5g-legend-256-gb/p/itm6f3ed25282063" target="_blank">🛍 Flipkart ₹54,999</a>
+            <a class="pick-btn amazon"   href="https://www.amazon.in/s?k=iQOO+13+5G" target="_blank">🛒 Amazon</a>
+            <a class="pick-btn official" href="https://www.iqoo.com/in/index.html" target="_blank">🔗 Official iQOO India</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FINDER -->
+<section id="finder">
+  <div class="section">
+    <div class="section-label">// Smart Phone Finder</div>
+    <h2 class="section-title">WHAT'S YOUR<br>BUDGET?</h2>
+    <p style="color:var(--muted);font-family:'Instrument Serif',serif;font-style:italic;font-size:1.05rem;">Tell us your needs — we'll find your perfect match.</p>
+
+    <div class="finder-grid">
+
+      <div class="finder-card full">
+        <label>💰 Maximum Budget (INR)</label>
+        <div class="price-display" id="priceDisplay">₹50,000</div>
+        <div class="range-track">
+          <div class="range-fill" id="rangeFill" style="width:28.5%;"></div>
+          <input type="range" id="priceRange" min="10000" max="150000" value="50000" step="1000" oninput="updatePrice(this.value)">
+        </div>
+        <div class="range-labels">
+          <span>₹10K</span><span>₹30K</span><span>₹50K</span><span>₹80K</span><span>₹1L</span><span>₹1.5L</span>
+        </div>
+      </div>
+
+      <div class="finder-card full">
+        <label>⚡ Usage Priority (select all that apply)</label>
+        <div class="chips" id="priorityChips">
+          <div class="chip active" data-val="camera"      onclick="toggleChip(this)">📸 Camera</div>
+          <div class="chip"        data-val="battery"     onclick="toggleChip(this)">🔋 Battery Life</div>
+          <div class="chip"        data-val="performance" onclick="toggleChip(this)">⚡ Performance</div>
+          <div class="chip"        data-val="display"     onclick="toggleChip(this)">✨ Display</div>
+          <div class="chip"        data-val="software"    onclick="toggleChip(this)">🧹 Clean Software</div>
+          <div class="chip"        data-val="gaming"      onclick="toggleChip(this)">🎮 Gaming</div>
+          <div class="chip"        data-val="compact"     onclick="toggleChip(this)">🤏 Compact</div>
+          <div class="chip"        data-val="build"       onclick="toggleChip(this)">💎 Premium Build</div>
+        </div>
+      </div>
+
+      <div class="finder-card">
+        <label>📱 Operating System</label>
+        <div class="os-toggle">
+          <button class="os-btn active-any" id="osAny"     onclick="setOS('any')">Any OS</button>
+          <button class="os-btn"            id="osIos"     onclick="setOS('ios')">🍎 iOS</button>
+          <button class="os-btn"            id="osAndroid" onclick="setOS('android')">🤖 Android</button>
+        </div>
+      </div>
+
+      <div class="finder-card">
+        <label>👤 I Am A...</label>
+        <div style="display:flex;flex-direction:column;gap:.45rem;" id="userChips">
+          <div class="user-chip active" data-val="all"      onclick="toggleUser(this)">🌍 General User</div>
+          <div class="user-chip"        data-val="creator"  onclick="toggleUser(this)">🎨 Creator / Photographer</div>
+          <div class="user-chip"        data-val="business" onclick="toggleUser(this)">💼 Business / Productivity</div>
+          <div class="user-chip"        data-val="gamer"    onclick="toggleUser(this)">🕹️ Hardcore Gamer</div>
+        </div>
+      </div>
+
+      <div class="finder-card full" style="background:transparent;border:none;padding:0;">
+        <button class="find-btn" onclick="findPhones()">FIND MY PHONE →</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results">
+  <div class="section" style="padding-top:2rem;">
+    <div class="results-header">
+      <div>
+        <div class="section-label">// Matched Devices</div>
+        <h2 class="section-title" style="font-size:clamp(2rem,5vw,3.5rem);">YOUR PICKS</h2>
+      </div>
+      <div class="result-count">Showing <span id="resultCount">0</span> phones</div>
+    </div>
+    <div class="phones-grid" id="phonesGrid"></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- COMPARE -->
+<section id="compare" class="compare-section">
+  <div class="section">
+    <div class="section-label">// Full Comparison</div>
+    <h2 class="section-title">ALL<br>PHONES</h2>
+    <div class="compare-table-wrap">
+      <table class="compare-table" id="compareTable"></table>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <span class="logo-text">Geek<span>Phone</span></span>
+  India's Smartphone Intelligence · Prices in INR · Updated March 2026
+</footer>
+
+<script>
+/* CURSOR */
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursorRing');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+  ring.style.left   = e.clientX + 'px';
+  ring.style.top    = e.clientY + 'px';
+});
+
+/* SMOOTH SCROLL */
+function smoothTo(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const navH = document.querySelector('nav').offsetHeight;
+  const y = el.getBoundingClientRect().top + window.pageYOffset - navH - 12;
+  window.scrollTo({ top: y, behavior: 'smooth' });
+}
+
+/* PHONE DATABASE */
+const phones = [
+  { id:101, name:"Redmi 14C 5G", brand:"Xiaomi", os:"android", price:10999,
+    emoji:"📱", scores:{camera:62,battery:80,performance:65,display:70,software:68},
+    tags:["5G Under ₹11K","5160mAh","Entry Level","Great Value"],
+    userTypes:["all"],
+    amazonLink:"https://www.amazon.in/s?k=Redmi+14C+5G",
+    flipkartLink:"https://www.flipkart.com/redmi-14c-5g/p/itm891e2331b34d8",
+    officialLink:"https://www.mi.com/in/" },
+
+  { id:102, name:"Realme Narzo 70 Pro 5G", brand:"Realme", os:"android", price:13999,
+    emoji:"🟡", scores:{camera:70,battery:82,performance:72,display:74,software:70},
+    tags:["AMOLED Display","5G Ready","50MP Camera","5000mAh"],
+    userTypes:["all"],
+    amazonLink:"https://www.amazon.in/s?k=Realme+Narzo+70+Pro+5G",
+    flipkartLink:"https://www.flipkart.com/realme-narzo-70-pro-5g-green-glass-green-128-gb/p/itm2742a62e69f5a",
+    officialLink:"https://www.realme.com/in/" },
+
+  { id:103, name:"Samsung Galaxy A16 5G", brand:"Samsung", os:"android", price:15999,
+    emoji:"🔷", scores:{camera:72,battery:85,performance:70,display:76,software:78},
+    tags:["6yr OS Updates","5000mAh","50MP Camera","Samsung One UI"],
+    userTypes:["all","business"],
+    amazonLink:"https://www.amazon.in/s?k=Samsung+Galaxy+A16+5G",
+    flipkartLink:"https://www.flipkart.com/samsung-galaxy-a16-5g-light-green-128-gb/p/itmeb3b07d3eff44",
+    officialLink:"https://www.samsung.com/in/smartphones/galaxy-a/" },
+
+  { id:104, name:"iQOO Z9s 5G", brand:"iQOO", os:"android", price:17999,
+    emoji:"💚", scores:{camera:74,battery:88,performance:78,display:80,software:75},
+    tags:["AMOLED 120Hz","6000mAh","Snapdragon 6 Gen 1","Best Battery Mid"],
+    userTypes:["all","gamer"],
+    amazonLink:"https://www.amazon.in/s?k=iQOO+Z9s+5G",
+    flipkartLink:"https://www.flipkart.com/iqoo-z9s-5g-titanium-matte-128-gb/p/itm5db90df0e52cf",
+    officialLink:"https://www.iqoo.com/in/index.html" },
+
+  { id:105, name:"Motorola G85 5G", brand:"Motorola", os:"android", price:18999,
+    emoji:"〽", scores:{camera:76,battery:84,performance:76,display:82,software:84},
+    tags:["pOLED Display","Near-Stock Android","50MP OIS","Stylish Design"],
+    userTypes:["all"],
+    amazonLink:"https://www.amazon.in/s?k=Motorola+G85+5G",
+    flipkartLink:"https://www.flipkart.com/motorola-g85-5g-olive-green-128-gb/p/itm897540eb01ff1",
+    officialLink:"https://www.motorola.in/smartphones" },
+
+  { id:1, name:"Nothing Phone 3a", brand:"Nothing", os:"android", price:21999,
+    emoji:"🌀", scores:{camera:78,battery:84,performance:82,display:84,software:92},
+    tags:["Glyph Interface","Clean UI","Best Budget","Transparent Design"],
+    userTypes:["all"],
+    amazonLink:"https://www.amazon.in/s?k=Nothing+Phone+3a",
+    flipkartLink:"https://www.flipkart.com/nothing-phone-3a-black-128-gb/p/itm49557c5a65f9c",
+    officialLink:"https://in.nothing.tech/pages/phone-3a" },
+
+  { id:2, name:"Redmi Note 14 Pro 5G", brand:"Xiaomi", os:"android", price:26999,
+    emoji:"🔴", scores:{camera:82,battery:88,performance:80,display:85,software:74},
+    tags:["50MP Camera","5500mAh","120Hz AMOLED","Mid-Range King"],
+    userTypes:["all"],
+    amazonLink:"https://www.amazon.in/s?k=Redmi+Note+14+Pro+5G",
+    flipkartLink:"https://www.flipkart.com/redmi-note-14-pro-5g-ivy-green-128-gb/p/itm124f940049e20",
+    officialLink:"https://www.mi.com/in/" },
+
+  { id:3, name:"OnePlus Nord 5", brand:"OnePlus", os:"android", price:29999,
+    emoji:"🔵", scores:{camera:80,battery:90,performance:86,display:88,software:88},
+    tags:["Snapdragon 8s Gen 3","6800mAh","144Hz AMOLED","Clean OxygenOS"],
+    userTypes:["all","business"],
+    amazonLink:"https://www.amazon.in/s?k=OnePlus+Nord+5",
+    flipkartLink:"https://www.flipkart.com/oneplus-nord-5-5g-dry-ice-256-gb/p/itme333f56ade583",
+    officialLink:"https://www.oneplus.in/" },
+
+  { id:4, name:"Samsung Galaxy S24 FE", brand:"Samsung", os:"android", price:35999,
+    emoji:"💙", scores:{camera:86,battery:85,performance:86,display:90,software:85},
+    tags:["Snapdragon 8 Gen 3","Galaxy AI","Dynamic AMOLED","7yr Updates"],
+    userTypes:["all","business"],
+    amazonLink:"https://www.amazon.in/Samsung-Galaxy-FE-Storage-Graphite/dp/B0DJ78RGY4",
+    flipkartLink:"https://www.flipkart.com/samsung-galaxy-s24-fe-5g-graphite-128-gb/p/itme960199e26f23",
+    officialLink:"https://www.samsung.com/in/smartphones/galaxy-s-fan-edition/" },
+
+  { id:5, name:"Google Pixel 9a", brand:"Google", os:"android", price:49999,
+    emoji:"🔍", scores:{camera:92,battery:84,performance:86,display:86,software:99},
+    tags:["Best Camera Value","Pure Android","7yr Updates","AI Photography"],
+    userTypes:["all","creator","business"],
+    amazonLink:"https://www.amazon.in/s?k=Google+Pixel+9a",
+    flipkartLink:"https://www.flipkart.com/google-pixel-9a-porcelain-256-gb/p/itmfe749ceddac9a",
+    officialLink:"https://store.google.com/in/product/pixel_9a" },
+
+  { id:6, name:"iQOO 13 5G", brand:"iQOO", os:"android", price:54999,
+    emoji:"⚡", scores:{camera:87,battery:95,performance:98,display:93,software:80},
+    tags:["120W Charging","144Hz E7 AMOLED","Snapdragon 8 Elite","Gaming Beast"],
+    userTypes:["all","gamer","creator"],
+    amazonLink:"https://www.amazon.in/s?k=iQOO+13+5G",
+    flipkartLink:"https://www.flipkart.com/iqoo-13-5g-legend-256-gb/p/itm6f3ed25282063",
+    officialLink:"https://www.iqoo.com/in/index.html" },
+
+  { id:7, name:"OnePlus 13", brand:"OnePlus", os:"android", price:63999,
+    emoji:"📱", scores:{camera:94,battery:92,performance:97,display:96,software:94},
+    tags:["Hasselblad Camera","2K AMOLED","IP69 Rated","5yr OS Updates"],
+    userTypes:["all","creator","business"],
+    amazonLink:"https://www.amazon.in/dp/B0DPS7FB4J",
+    flipkartLink:"https://www.flipkart.com/oneplus-13-black-eclipse-256-gb/p/itmb4659fd2a037f",
+    officialLink:"https://www.oneplus.in/oneplus-13" },
+
+  { id:8, name:"iPhone 16", brand:"Apple", os:"ios", price:69900,
+    emoji:"🍎", scores:{camera:90,battery:84,performance:96,display:86,software:96},
+    tags:["A18 Chip","Camera Control","Apple Intelligence","USB-C"],
+    userTypes:["all","business"],
+    amazonLink:"https://www.amazon.in/Apple-iPhone-16-128-GB/dp/B0DGJBZPHG",
+    flipkartLink:"https://www.flipkart.com/apple-iphone-16-black-128-gb/p/itm61d56fe7e00ee",
+    officialLink:"https://www.apple.com/in/shop/buy-iphone/iphone-16" },
+
+  { id:9, name:"Samsung Galaxy S25+", brand:"Samsung", os:"android", price:99999,
+    emoji:"💫", scores:{camera:91,battery:88,performance:95,display:95,software:85},
+    tags:["Snapdragon 8 Elite","Galaxy AI","Slim Design","7yr Updates"],
+    userTypes:["all","business","creator"],
+    amazonLink:"https://www.amazon.in/Samsung-Galaxy-S25-256GB-Storage/dp/B0DS7JJ4ZH",
+    flipkartLink:"https://www.flipkart.com/samsung-galaxy-s25-plus/p/itm9987c3cd0dda3",
+    officialLink:"https://www.samsung.com/in/smartphones/galaxy-s25-plus/" },
+
+  { id:10, name:"ASUS ROG Phone 8 Pro", brand:"ASUS", os:"android", price:99999,
+    emoji:"🎮", scores:{camera:80,battery:93,performance:99,display:96,software:80},
+    tags:["Gaming King","165Hz AMOLED","AirTriggers","16GB RAM"],
+    userTypes:["gamer"],
+    amazonLink:"https://www.amazon.in/s?k=ASUS+ROG+Phone+8+Pro",
+    flipkartLink:"https://www.flipkart.com/q/asus-rog-phone-8-pro",
+    officialLink:"https://rog.asus.com/in/phones/rog-phone-8-series/" },
+
+  { id:11, name:"Samsung Galaxy S25 Ultra", brand:"Samsung", os:"android", price:109999,
+    emoji:"📲", scores:{camera:97,battery:90,performance:97,display:99,software:84},
+    tags:["200MP Camera","S-Pen Included","Galaxy AI","Titanium Frame"],
+    userTypes:["all","creator","business","gamer"],
+    amazonLink:"https://www.amazon.in/Samsung-Galaxy-S25-Ultra-Titanium/dp/B0DS6GFWLF",
+    flipkartLink:"https://www.flipkart.com/samsung-galaxy-s25-ultra-5g-titanium-silverblue-512-gb/p/itm2ce28bbf75993",
+    officialLink:"https://www.samsung.com/in/smartphones/galaxy-s25-ultra/buy/" },
+
+  { id:12, name:"iPhone 16 Pro Max", brand:"Apple", os:"ios", price:144900,
+    emoji:"🏆", scores:{camera:99,battery:90,performance:99,display:92,software:97},
+    tags:["A18 Pro Chip","ProRAW Camera","Apple Intelligence","Titanium"],
+    userTypes:["all","creator","business"],
+    amazonLink:"https://www.amazon.in/Apple-iPhone-16-Pro-Max/dp/B0DGJS1SLG",
+    flipkartLink:"https://www.flipkart.com/apple-iphone-16-pro-max-black-titanium-256-gb/p/itm9edec0ec46f86",
+    officialLink:"https://www.apple.com/in/shop/buy-iphone/iphone-16-pro" },
+];
+
+/* STATE */
+let selectedOS   = 'any';
+let selectedUser = 'all';
+
+/* PRICE SLIDER */
+function updatePrice(val) {
+  const n = parseInt(val);
+  document.getElementById('priceDisplay').textContent =
+    n >= 100000 ? '\u20b9' + (n/100000).toFixed(1) + 'L' : '\u20b9' + n.toLocaleString('en-IN');
+  document.getElementById('rangeFill').style.width =
+    ((n - 10000) / (150000 - 10000) * 100) + '%';
+}
+
+/* CHIP TOGGLES */
+function toggleChip(el) { el.classList.toggle('active'); }
+
+function toggleUser(el) {
+  document.querySelectorAll('#userChips .user-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedUser = el.dataset.val;
+}
+
+/* OS SELECTOR */
+function setOS(os) {
+  selectedOS = os;
+  document.getElementById('osAny').className     = 'os-btn' + (os==='any'     ? ' active-any'     : '');
+  document.getElementById('osIos').className     = 'os-btn' + (os==='ios'     ? ' active-ios'     : '');
+  document.getElementById('osAndroid').className = 'os-btn' + (os==='android' ? ' active-android' : '');
+}
+
+/* HELPERS */
+function fmtPrice(p) {
+  return p >= 100000
+    ? '\u20b9' + (p/100000).toFixed(2) + 'L'
+    : '\u20b9' + p.toLocaleString('en-IN');
+}
+function getScoreColor(s) {
+  if (s >= 90) return 'var(--accent)';
+  if (s >= 75) return 'var(--accent3)';
+  return 'var(--accent2)';
+}
+
+/* FIND PHONES */
+function findPhones() {
+  const maxPrice   = parseInt(document.getElementById('priceRange').value);
+  const priorities = [...document.querySelectorAll('#priorityChips .chip.active')].map(c => c.dataset.val);
+  const scoreMap   = {
+    camera:'camera', battery:'battery', performance:'performance',
+    display:'display', software:'software', gaming:'performance',
+    compact:null, build:null
+  };
+
+  function scorePhone(p) {
+    let r = 0;
+    priorities.forEach(pr => { const k = scoreMap[pr]; if (k) r += p.scores[k]; });
+    return r;
+  }
+
+  const osUserFiltered = phones.filter(p => {
+    if (selectedOS !== 'any' && p.os !== selectedOS) return false;
+    if (selectedUser !== 'all' && !p.userTypes.includes(selectedUser)) return false;
+    return true;
+  });
+
+  let filtered = osUserFiltered
+    .filter(p => p.price <= maxPrice)
+    .map(p => ({ ...p, relevance: scorePhone(p) }))
+    .sort((a, b) => b.relevance - a.relevance);
+
+  const grid = document.getElementById('phonesGrid');
+
+  if (filtered.length === 0) {
+    // Smart fallback: cheapest available + best match just above budget
+    const byPrice = phones.slice().sort((a, b) => a.price - b.price);
+    const cheapest  = byPrice[0];
+    const justAbove = byPrice.find(p => p.price > maxPrice) || byPrice[1];
+    let suggestions = [cheapest];
+    if (justAbove && justAbove.id !== cheapest.id) suggestions.push(justAbove);
+
+    const stretchPrice = fmtPrice(suggestions[0].price);
+    const bannerHTML =
+      '<div style="grid-column:1/-1;background:rgba(200,255,0,.07);border:1px solid rgba(200,255,0,.2);' +
+      'border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1rem;display:flex;align-items:flex-start;gap:1rem;">' +
+        '<span style="font-size:1.5rem;flex-shrink:0;">💡</span>' +
+        '<div>' +
+          '<div style="font-family:Syne,sans-serif;font-weight:800;font-size:.95rem;color:var(--accent);margin-bottom:.3rem;">' +
+            'No phones found within ' + fmtPrice(maxPrice) +
+          '</div>' +
+          '<div style="font-family:Instrument Serif,serif;font-style:italic;font-size:.9rem;color:var(--muted);">' +
+            'Showing our closest recommendations. The most affordable option starts at ' +
+            '<strong style="color:var(--text);">' + stretchPrice + '</strong>.' +
+            ' Stretching your budget slightly gets you a much better experience!' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    grid.innerHTML = bannerHTML + suggestions.map((p, i) => renderCard(p, i === 0, true)).join('');
+    document.getElementById('resultCount').textContent = '0 exact, ' + suggestions.length + ' suggested';
+  } else {
+    grid.innerHTML = filtered.map((p, i) => renderCard(p, i === 0, false)).join('');
+    document.getElementById('resultCount').textContent = filtered.length;
+  }
+
+  document.getElementById('results').classList.add('visible');
+  setTimeout(function() { smoothTo('results'); }, 80);
+}
+
+/* RENDER CARD */
+function renderCard(p, isTop, isFallback) {
+  isFallback = isFallback || false;
+  const keys = ['camera','battery','performance','display','software'];
+  const bars = keys.map(function(k) {
+    const v = p.scores[k];
+    return '<div class="score-row">' +
+      '<div class="score-label">' + k + '</div>' +
+      '<div class="score-bar"><div class="score-fill" style="width:' + v + '%;background:' + getScoreColor(v) + ';"></div></div>' +
+      '<div class="score-num">' + v + '</div>' +
+    '</div>';
+  }).join('');
+
+  const tags = p.tags.slice(0,3).map(function(t, i) {
+    return '<span class="phone-tag ' + (i===0?'good':'neutral') + '">' + t + '</span>';
+  }).join('');
+
+  const suggestedBadge = isFallback
+    ? '<div style="position:absolute;top:1rem;right:1rem;background:rgba(255,92,92,.12);color:var(--accent2);' +
+      'border:1px solid rgba(255,92,92,.25);font-family:monospace;font-size:.56rem;letter-spacing:.1em;' +
+      'padding:.25rem .6rem;border-radius:4px;z-index:2;text-transform:uppercase;">Suggested</div>'
+    : '';
+
+  const topBadge = isTop && !isFallback
+    ? '<div style="position:absolute;top:1rem;right:1rem;background:var(--accent);color:#000;' +
+      'font-family:monospace;font-size:.58rem;font-weight:bold;letter-spacing:.12em;' +
+      'padding:.3rem .7rem;border-radius:4px;z-index:2;">TOP PICK</div>'
+    : '';
+
+  const borderStyle = isFallback ? 'border-color:rgba(255,92,92,.15);' : '';
+
+  const amazonBtn  = p.amazonLink
+    ? '<a class="buy-btn amazon" href="' + p.amazonLink + '" target="_blank">🛒 Amazon</a>' : '';
+  const flipkartBtn = p.flipkartLink
+    ? '<a class="buy-btn flipkart" href="' + p.flipkartLink + '" target="_blank">🛍 Flipkart</a>' : '';
+  const officialBtn = '<a class="buy-btn official" href="' + p.officialLink + '" target="_blank">🔗 Official Store</a>';
+
+  return '<div class="phone-card" style="' + borderStyle + '">' +
+    '<div class="phone-img-wrap">' +
+      topBadge + suggestedBadge +
+      '<span class="phone-brand-badge">' + p.brand + '</span>' +
+      '<div class="phone-emoji">' + p.emoji + '</div>' +
+    '</div>' +
+    '<div class="phone-body">' +
+      '<div class="phone-name">' + p.name + '</div>' +
+      '<div class="phone-price">' + fmtPrice(p.price) + '</div>' +
+      '<div class="phone-scores">' + bars + '</div>' +
+      '<div class="phone-tags">' + tags + '</div>' +
+      '<div class="phone-buy-btns">' + amazonBtn + flipkartBtn + officialBtn + '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+/* BUILD COMPARE TABLE */
+function buildCompareTable() {
+  const keys = ['camera','battery','performance','display','software'];
+  const maxS = {};
+  keys.forEach(function(k) { maxS[k] = Math.max.apply(null, phones.map(function(p) { return p.scores[k]; })); });
+
+  let thead = '<thead><tr><th>Device</th><th>Price</th><th>OS</th>';
+  keys.forEach(function(k) { thead += '<th>' + k.charAt(0).toUpperCase() + k.slice(1) + '</th>'; });
+  thead += '<th>Buy</th></tr></thead>';
+
+  let tbody = '<tbody>';
+  phones.forEach(function(p) {
+    tbody += '<tr><td>' + p.name + '</td><td>' + fmtPrice(p.price) + '</td><td>' +
+      (p.os==='ios' ? '🍎 iOS' : '🤖 Android') + '</td>';
+    keys.forEach(function(k) {
+      const v = p.scores[k];
+      const best = v === maxS[k];
+      let dots = '';
+      for (let i = 0; i < 5; i++) {
+        dots += '<div class="dot' + (i < Math.round(v/20) ? ' filled' : '') + '"></div>';
+      }
+      tbody += '<td class="' + (best?'best':'') + '"><div style="display:flex;align-items:center;gap:.4rem;">' +
+        '<div class="rating-dots">' + dots + '</div>' + v + '</div></td>';
+    });
+    tbody += '<td><a href="' + (p.amazonLink||p.officialLink) + '" target="_blank" ' +
+      'style="color:var(--accent);text-decoration:none;font-size:.8rem;font-weight:700;">Buy →</a></td></tr>';
+  });
+  tbody += '</tbody>';
+
+  document.getElementById('compareTable').innerHTML = thead + tbody;
+}
+
+buildCompareTable();
+</script>
+</body>
+</html>
